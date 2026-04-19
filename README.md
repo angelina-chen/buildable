@@ -150,22 +150,6 @@ Tables used in the generator align with the class dataset: `sets`, `themes`, inv
 - **Local:** you can commit thumbnails under `images/sets/` named like the set id (e.g. `7740-1.jpg`, `.webp`, or `.png`) for reliable static hosting.
 - **Remote:** `data.js` carries CDN URLs; the UI tries additional fallbacks and **`assets/placeholder-set.svg`** so broken images do not leave an empty frame.
 
-## GitHub Pages
-
-Published at **[https://angelina-chen.github.io/buildable/](https://angelina-chen.github.io/buildable/)** (updates on every push to **`main`**).
-
-1. In the repo on GitHub: **Settings** → **Pages**.
-2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”) and **save**. Until this is saved, the Pages API returns “Not Found” and Actions steps that query site metadata will fail.
-3. Pushes to **`main`** run **`.github/workflows/deploy-pages.yml`**, which copies **`index.html`**, **`style.css`**, **`scripts.js`**, **`data.js`**, and **`assets/`** into the published bundle (and **`images/`** if that folder exists). The Python generator under **`scripts/`** is not uploaded; rebuild **`data.js`** locally before pushing if you change the catalog.
-
-The first run may ask you to approve the **`github-pages`** environment once (**Settings** → **Environments**). Check **Actions** for workflow status and the Pages URL in the job summary.
-
-**If the workflow fails in a few seconds:** open the run → expand the failed step and read the error. Common fixes:
-
-1. **Settings** → **Environments** → **`github-pages`** → **Deployment branches and tags** must include **`main`** (or use **All branches**). Clear **Required reviewers** unless you want to approve each deploy manually.
-2. **Fork:** **Settings** → **Actions** → **General** → allow Actions to run (forks sometimes default to disabled).
-3. Error **Resource not accessible by integration:** **Settings** → **Actions** → **General** → **Workflow permissions** → **Read and write permissions** (some org defaults block what Pages needs), then re-run the workflow.
-
 ## Credits
 
 Snap Engineering Academy **Stage 2** static-page pattern, extended with catalog logic in **`CatalogCore`** and the interactive UI in **`BuildableUI`** (`scripts.js`).
