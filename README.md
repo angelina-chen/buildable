@@ -2,7 +2,7 @@
 
 **Live site:** [https://angelina-chen.github.io/buildable/](https://angelina-chen.github.io/buildable/)
 
-LEGO catalog mini-app: filter and sort a static subset of sets, track a **parts I have** list, and see **% match** per set against that list. Built for **Snap Engineering Academy Stage 2** as **vanilla HTML / CSS / JavaScript** (no frameworks, no runtime APIs for catalog data).
+LEGO catalog mini-app: filter and sort a static subset of sets, track a **parts I have** list, and see **% match** per set against that list.
 
 ## Table of contents
 
@@ -168,4 +168,4 @@ The first run may ask you to approve the **`github-pages`** environment once (**
 
 ## Credits
 
-Snap Engineering Academy **Stage 2** static-page pattern (card template clone-and-fill), extended with catalog logic in **`CatalogCore`** and the interactive UI in **`BuildableUI`** (`scripts.js`).
+Snap Engineering Academy **Stage 2** static-page pattern, extended with catalog logic in **`CatalogCore`** and the interactive UI in **`BuildableUI`** (`scripts.js`).
