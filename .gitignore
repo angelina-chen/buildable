@@ -1,0 +1,14 @@
+lego-data/
+
+__pycache__/
+*.py[cod]
+*.pyc
+
+node_modules/
+
+*.log
+logs/
+.DS_Store
+
+.env
+.env.*

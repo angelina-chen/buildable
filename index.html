@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <script>
+      (function () {
+        try {
+          if (localStorage.getItem("buildable-theme") === "dark") document.documentElement.setAttribute("data-theme", "dark");
+          else document.documentElement.removeAttribute("data-theme");
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Buildable</title>
+    <link rel="icon" href="assets/favicon.svg?v=8" type="image/svg+xml" sizes="any" />
+    <meta
+      name="description"
+      content="Filter LEGO sets, sort results, and list parts you have — each card shows % catalog match. LEGO data from Kaggle."
+    />
+    <link rel="stylesheet" href="style.css" />
+    <!-- start data.js early; execute at end of body so html/css can paint first. -->
+    <link rel="preload" href="data.js" as="script" />
+    <link rel="preload" href="scripts.js" as="script" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="site-header-inner site-header-inner--split">
+        <div class="site-header-brand">
+          <h1 class="site-title">Buildable</h1>
+          <p class="site-tagline">
+            Find LEGO sets you can build with the parts you already have.
+          </p>
+        </div>
+        <div class="site-header-actions">
+          <button
+            type="button"
+            id="theme-toggle"
+            class="theme-toggle"
+            aria-label="Switch to dark theme"
+            title="Dark mode"
+          >
+            <span class="theme-toggle-icon theme-toggle-icon--moon" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M21 14.5A8.5 8.5 0 0 1 9.5 3a8.5 8.5 0 1 0 11.5 11.5Z"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </span>
+            <span class="theme-toggle-icon theme-toggle-icon--sun hidden" aria-hidden="true">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.75" />
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"
+                  stroke="currentColor"
+                  stroke-width="1.75"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </span>
+          </button>
+          <button
+            type="button"
+            id="wishlist-toggle"
+            class="button wishlist-toggle"
+            aria-expanded="false"
+            aria-controls="wishlist-drawer"
+          >
+            <span class="wishlist-toggle-inner"><span class="wishlist-toggle-text">Wishlist</span><span class="wishlist-count" aria-hidden="true">0</span></span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <div class="main-column">
+        <section class="panel filters-panel panel-sticky" aria-labelledby="filters-heading">
+          <h2 id="filters-heading" class="panel-title">Filters</h2>
+          <p class="panel-hint">
+            Theme, era, sort, set search, and % match vs your parts list.
+          </p>
+          <div class="filters-row filters-row-main">
+            <label class="filters-field filters-field--theme">
+              LEGO theme
+              <select id="theme-select" class="select-input"></select>
+            </label>
+            <label class="filters-field filters-field--era">
+              Time period
+              <select id="era-select" class="select-input">
+                <option value="" title="All periods">All periods</option>
+                <option value="Classic">Classic (&lt;1990)</option>
+                <option value="90s">1990s</option>
+                <option value="2000s">2000s</option>
+                <option value="Modern">2010+</option>
+              </select>
+            </label>
+            <label class="filters-field filters-field--sort">
+              Order results
+              <select id="sort-select" class="select-input select-input--sort">
+                <option value="name" selected>A–Z by name</option>
+                <option value="year">Newest sets first</option>
+                <option value="num_parts">Most pieces first</option>
+                <option value="pct">Best match to my parts (highest %)</option>
+              </select>
+            </label>
+            <div class="filter-collection filter-collection--parts" role="group" aria-labelledby="part-search-label">
+              <label id="part-search-label" class="filter-collection-heading" for="part-search">Parts I have</label>
+              <input
+                type="search"
+                id="part-search"
+                class="text-input"
+                placeholder="Search by name or ID"
+                title="Search by name or part ID. Typing the full ID lists that part first."
+                autocomplete="off"
+                aria-describedby="collection-metric"
+              />
+              <div id="part-suggestions" class="part-suggestions" role="listbox" aria-label="Catalog search results"></div>
+              <div id="owned-chips-shell" class="owned-chips-shell">
+                <div id="owned-chips" class="owned-chips" aria-live="polite"></div>
+              </div>
+              <button
+                type="button"
+                id="owned-chips-toggle"
+                class="button button-secondary button-small owned-chips-toggle hidden"
+                aria-expanded="false"
+              >
+                Show all
+              </button>
+              <p id="collection-metric" class="collection-metric" aria-live="polite"></p>
+            </div>
+          </div>
+          <label class="block-label" for="set-search">Find a set by name or number</label>
+          <input type="search" id="set-search" class="text-input" placeholder="e.g. Millennium… or 75192" autocomplete="off" />
+          <button
+            type="button"
+            id="toggle-custom-set"
+            class="button button-secondary"
+            aria-expanded="false"
+            aria-controls="custom-set-panel"
+          >
+            + Add a custom set
+          </button>
+        </section>
+
+        <section id="custom-set-panel" class="panel custom-set-panel hidden" aria-labelledby="custom-set-heading">
+          <h2 id="custom-set-heading" class="panel-title">Add custom set</h2>
+          <form id="custom-set-form" class="custom-set-form">
+            <label>Name <input type="text" name="name" class="text-input" required /></label>
+            <label>Year <input type="number" name="year" class="text-input" min="1950" max="2035" required /></label>
+            <label>Theme <input type="text" name="theme" class="text-input" required /></label>
+            <label
+              >Parts in this set (hold Ctrl/Cmd to select multiple)
+              <select name="part_ids" class="select-input select-multiple" multiple size="8"></select>
+            </label>
+            <div class="form-actions">
+              <button type="submit" class="button">Save set</button>
+              <button type="button" id="cancel-custom-set" class="button button-secondary">
+                Cancel
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <section class="catalog-section" aria-labelledby="catalog-heading">
+          <h2 id="catalog-heading" class="catalog-heading-visible">Catalog</h2>
+          <p id="catalog-stats" class="catalog-stats" aria-live="polite"></p>
+          <div id="empty-state" class="empty-state hidden" role="status">
+            <p>No sets match your filters.</p>
+            <p class="empty-hint">Try “All” theme, “All eras”, or clear the set search.</p>
+          </div>
+          <div id="catalog-scroll-viewport" class="catalog-scroll-viewport">
+            <div id="catalog-virtual-track" class="catalog-virtual-track">
+              <div id="card-container" class="card-grid"></div>
+            </div>
+          </div>
+          <nav
+            id="catalog-pagination"
+            class="catalog-pagination hidden"
+            aria-label="Catalog browsing"
+          >
+            <button
+              type="button"
+              id="catalog-page-prev"
+              class="button button-secondary button-small catalog-pagination__legacy"
+              hidden
+            >
+              Previous
+            </button>
+            <p id="catalog-page-status" class="catalog-page-status" aria-live="polite"></p>
+            <button
+              type="button"
+              id="catalog-page-next"
+              class="button button-secondary button-small catalog-pagination__legacy"
+              hidden
+            >
+              Next
+            </button>
+          </nav>
+        </section>
+      </div>
+    </div>
+
+    <div id="wishlist-backdrop" class="wishlist-backdrop hidden" aria-hidden="true"></div>
+    <div
+      id="wishlist-drawer"
+      class="wishlist-drawer hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="wishlist-heading"
+    >
+      <div class="wishlist-drawer-inner panel">
+        <h2 id="wishlist-heading" class="panel-title">Wishlist</h2>
+        <p class="wishlist-help">In-memory only — reload clears it.</p>
+        <ul id="wishlist-list" class="wishlist-list"></ul>
+      </div>
+    </div>
+    <!-- template card (starter pattern: clone and fill) -->
+    <div class="card card-template" style="display: none" aria-hidden="true">
+      <div class="card-inner">
+        <img class="card-img" src="" alt="" loading="lazy" />
+        <div class="card-body">
+          <h3 class="card-title"></h3>
+          <p class="card-meta"></p>
+          <p class="card-set-id"></p>
+          <p class="card-count"></p>
+          <div class="progress-wrap" aria-hidden="true">
+            <div class="progress-track">
+              <div class="progress-fill"></div>
+            </div>
+            <span class="progress-text"></span>
+          </div>
+          <div class="card-badges"></div>
+          <div class="card-actions">
+            <button type="button" class="button button-small btn-wishlist">+ Wishlist</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="detail-backdrop" class="modal-backdrop hidden" aria-hidden="true"></div>
+    <div
+      id="detail-modal"
+      class="modal hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="detail-modal-title"
+    >
+      <div class="modal-header">
+        <h2 id="detail-modal-title"></h2>
+        <button type="button" id="detail-close" class="modal-close" aria-label="Close details">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-top">
+          <img
+            id="detail-set-img"
+            class="detail-set-img"
+            src="assets/placeholder-set.svg"
+            alt=""
+            width="240"
+            height="180"
+            loading="lazy"
+          />
+          <dl id="detail-stats" class="detail-stats"></dl>
+        </div>
+        <div class="detail-actions">
+          <button type="button" id="detail-wishlist-btn" class="button button-small" hidden>
+            Add to wishlist
+          </button>
+        </div>
+        <p id="detail-summary" class="detail-summary"></p>
+        <h3 id="detail-missing-heading" class="detail-subheading">Parts you still need</h3>
+        <ul id="detail-missing-list" class="detail-list"></ul>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      id="back-to-top"
+      class="back-to-top"
+      aria-label="Back to top"
+      title="Back to top"
+      tabindex="-1"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M12 19V5M5 12l7-7 7 7" />
+      </svg>
+    </button>
+
+    <script src="data.js"></script>
+    <script defer src="scripts.js"></script>
+  </body>
+</html>
