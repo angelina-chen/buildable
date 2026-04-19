@@ -243,6 +243,7 @@
   }
 
   function bindSetImage(img, set) {
+    img.dataset.boundSetId = String(set.id);
     var urls = buildImageUrlCandidates(set);
     if (!urls.length) {
       img.removeAttribute("src");
@@ -265,6 +266,11 @@
       }
     };
     img.src = urls[0];
+  }
+
+  function bindSetImageIfNeeded(img, set) {
+    if (img.dataset.boundSetId === String(set.id)) return;
+    bindSetImage(img, set);
   }
 
   function getFilters() {
@@ -333,16 +339,10 @@
     });
   }
 
-  function makeCard(template, s) {
-    var card = template.cloneNode(true);
-    card.classList.remove("card-template");
-    card.style.display = "block";
-    card.dataset.setId = s.id;
-    card.removeAttribute("aria-hidden");
-
+  function fillCard(card, s) {
     var img = card.querySelector(".card-img");
     img.alt = s.name + " box art";
-    bindSetImage(img, s);
+    bindSetImageIfNeeded(img, s);
 
     card.querySelector(".card-title").textContent = s.name;
     card.querySelector(".card-meta").textContent = s.theme + " · " + s.year;
@@ -397,7 +397,15 @@
 
     var wishBtn = card.querySelector(".btn-wishlist");
     wishBtn.textContent = wl ? "Remove from wishlist" : "+ Wishlist";
+  }
 
+  function makeCard(template, s) {
+    var card = template.cloneNode(true);
+    card.classList.remove("card-template");
+    card.style.display = "block";
+    card.dataset.setId = s.id;
+    card.removeAttribute("aria-hidden");
+    fillCard(card, s);
     return card;
   }
 
@@ -479,7 +487,14 @@
     if (!force && skipKey === lastVirtualPaintKey) return;
     lastVirtualPaintKey = skipKey;
 
-    cardContainer.innerHTML = "";
+    var pool = {};
+    var prevCards = Array.prototype.slice.call(cardContainer.querySelectorAll("[data-set-id]"));
+    for (var pc = 0; pc < prevCards.length; pc++) {
+      var ex = prevCards[pc];
+      pool[ex.dataset.setId] = ex;
+      cardContainer.removeChild(ex);
+    }
+
     cardContainer.style.display = "block";
     cardContainer.style.position = "relative";
     cardContainer.style.minHeight = totalH + "px";
@@ -489,7 +504,13 @@
       var s = data[i];
       var row = Math.floor(i / cols);
       var col = i % cols;
-      var card = makeCard(template, s);
+      var card = pool[s.id];
+      if (card) {
+        delete pool[s.id];
+        fillCard(card, s);
+      } else {
+        card = makeCard(template, s);
+      }
       card.style.position = "absolute";
       card.style.boxSizing = "border-box";
       card.style.width = cardW + "px";
@@ -498,6 +519,12 @@
       card.style.left = col * (cardW + gap) + "px";
       card.style.top = row * rowStride + "px";
       cardContainer.appendChild(card);
+    }
+
+    for (var rest in pool) {
+      if (Object.prototype.hasOwnProperty.call(pool, rest)) {
+        delete pool[rest];
+      }
     }
 
     setBrowseLine(true, data.length, i0 + 1, i1);
