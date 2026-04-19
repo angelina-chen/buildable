@@ -1,5 +1,7 @@
 # Buildable
 
+**Live site:** [https://angelina-chen.github.io/buildable/](https://angelina-chen.github.io/buildable/)
+
 LEGO catalog mini-app: filter and sort a static subset of sets, track a **parts I have** list, and see **% match** per set against that list. Built for **Snap Engineering Academy Stage 2** as **vanilla HTML / CSS / JavaScript** (no frameworks, no runtime APIs for catalog data).
 
 ## Table of contents
@@ -150,7 +152,7 @@ Tables used in the generator align with the class dataset: `sets`, `themes`, inv
 
 ## GitHub Pages
 
-Live site (after setup): **`https://angelina-chen.github.io/buildable/`**
+Published at **[https://angelina-chen.github.io/buildable/](https://angelina-chen.github.io/buildable/)** (updates on every push to **`main`**).
 
 1. In the repo on GitHub: **Settings** → **Pages**.
 2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”) and **save**. Until this is saved, the Pages API returns “Not Found” and Actions steps that query site metadata will fail.
