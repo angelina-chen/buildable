@@ -153,7 +153,7 @@ Tables used in the generator align with the class dataset: `sets`, `themes`, inv
 Live site (after setup): **`https://angelina-chen.github.io/buildable/`**
 
 1. In the repo on GitHub: **Settings** → **Pages**.
-2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”).
+2. Under **Build and deployment**, set **Source** to **GitHub Actions** (not “Deploy from a branch”) and **save**. Until this is saved, the Pages API returns “Not Found” and Actions steps that query site metadata will fail.
 3. Pushes to **`main`** run **`.github/workflows/deploy-pages.yml`**, which copies **`index.html`**, **`style.css`**, **`scripts.js`**, **`data.js`**, and **`assets/`** into the published bundle (and **`images/`** if that folder exists). The Python generator under **`scripts/`** is not uploaded; rebuild **`data.js`** locally before pushing if you change the catalog.
 
 The first run may ask you to approve the **`github-pages`** environment once (**Settings** → **Environments**). Check **Actions** for workflow status and the Pages URL in the job summary.
