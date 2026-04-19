@@ -158,6 +158,12 @@ Live site (after setup): **`https://angelina-chen.github.io/buildable/`**
 
 The first run may ask you to approve the **`github-pages`** environment once (**Settings** → **Environments**). Check **Actions** for workflow status and the Pages URL in the job summary.
 
+**If the workflow fails in a few seconds:** open the run → expand the failed step and read the error. Common fixes:
+
+1. **Settings** → **Environments** → **`github-pages`** → **Deployment branches and tags** must include **`main`** (or use **All branches**). Clear **Required reviewers** unless you want to approve each deploy manually.
+2. **Fork:** **Settings** → **Actions** → **General** → allow Actions to run (forks sometimes default to disabled).
+3. Error **Resource not accessible by integration:** **Settings** → **Actions** → **General** → **Workflow permissions** → **Read and write permissions** (some org defaults block what Pages needs), then re-run the workflow.
+
 ## Credits
 
 Snap Engineering Academy **Stage 2** static-page pattern (card template clone-and-fill), extended with catalog logic in **`CatalogCore`** and the interactive UI in **`BuildableUI`** (`scripts.js`).
